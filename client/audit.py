@@ -93,7 +93,6 @@ def getFileSize(filePath, logData):
 
 def parseAuditLogs(filePath):
 	fileDir, fileName = os.path.split(filePath)
-	print(fileDir, fileName)
 	lastTimeStamp = database.getLatestTimestamp(fileName, fileDir)
 	startDate = lastTimeStamp.strftime(config.DATE_FORMATSTR)
 	startTime = lastTimeStamp.strftime(config.TIME_FORMATSTR)
@@ -129,7 +128,6 @@ def parseAuditLogs(filePath):
 			continue
 		events.detectIllegalFileChanges(logData['fileDir'], logData['timeStamp'])
 		events.detectMaliciousCommands(logData['executable'], logData['username'], logData['timeStamp'])
-		print(logData)
 		database.addLogInstance(**logData)
 
 

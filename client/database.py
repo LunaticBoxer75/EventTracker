@@ -10,7 +10,6 @@ connector = connect(config.DATABASE_NAME)
 clientID = os.getlogin()+"@"+socket.gethostname()
 
 class FileLog(Document):
-    id = StringField(primary_key = True)
     auditId = StringField(required = True)
     fileName = StringField(required = True)
     fileDir = StringField(required = True)
@@ -28,7 +27,6 @@ class FileLog(Document):
     clientID = StringField(required = True)
 
 class LoginActivity(Document):
-    id = StringField(primary_key = True)
     ipAddress = StringField(required = True)
     sessionId = IntField(required = True)
     username = StringField(required = True)
@@ -97,17 +95,15 @@ class ARPCache(Document):
     clientID = StringField(required = True)
 
 class Events(Document):
-    id = StringField(primary_key = True)
     eventTime = DateTimeField()
     eventData = StringField()
     clientID = StringField(required = True)
 
 def addLogInstance(auditId, fileName, fileDir, timeStamp, fileHash, username, proctitle,  size, inode, mode, sessionId, operation, executable=None, cwd=None):
-    id = str(timeStamp) + "::" + str(auditId)
-    object = FileLog.objects(id = id)
+    object = FileLog.objects(clientID = clientID, operation = operation, auditId = auditId, fileName = fileName, fileDir = fileDir, timeStamp = timeStamp, fileHash = fileHash, username = username, proctitle = proctitle, executable = executable, cwd = cwd, size = size, inode = inode, mode = mode, sessionId = sessionId)
     if(object):
         return
-    FileLog(clientID = clientID, operation = operation, id = id, auditId = auditId, fileName = fileName, fileDir = fileDir, timeStamp = timeStamp, fileHash = fileHash, username = username, proctitle = proctitle, executable = executable, cwd = cwd, size = size, inode = inode, mode = mode, sessionId = sessionId).save()
+    FileLog(clientID = clientID, operation = operation, auditId = auditId, fileName = fileName, fileDir = fileDir, timeStamp = timeStamp, fileHash = fileHash, username = username, proctitle = proctitle, executable = executable, cwd = cwd, size = size, inode = inode, mode = mode, sessionId = sessionId).save()
 
 def getLatestTimestamp(fileName, fileDir):
     fileLog = FileLog.objects(fileName = fileName, fileDir = fileDir)
@@ -119,7 +115,9 @@ def getLatestTimestamp(fileName, fileDir):
 
 def addLoginActivity(**kwargs):
     kwargs['clientID'] = clientID
-    kwargs['id'] = str(kwargs['loginTime']) + "::" + kwargs['sessionId']
+    object = LoginActivity.objects(**kwargs)
+    if(object):
+        return
     return LoginActivity(**kwargs).save()
 
 def getLastLoginLogTimestamp():
@@ -131,13 +129,11 @@ def getLastLoginLogTimestamp():
         return lastTimestamp
     return config.AUDIT_MIN_TIMESTAMP
 
-def getUserActivity(username):
-    activity = FileLog.objects(username=username)
-    lst = []
-    return activity.to_json()
-
 def addBashHistory(**kwargs):
     kwargs['clientID'] = clientID
+    object = BashHistory.objects(CommandTime = kwargs['CommandTime'], Command = kwargs['Command'], Pid = kwargs['Pid'], Name = kwargs['Name'], clientID = kwargs['clientID'])
+    if(object):
+        return
     BashHistory(**kwargs).save()
 
 def addKernelLog(**kwargs):
@@ -165,5 +161,7 @@ def addARPCache(**kwargs):
     ARPCache(**kwargs).save()
 
 def addEvent(eventTime, eventData):
-    id = (hashlib.md5((str(eventTime) + eventData).encode('utf-8'))).hexdigest()
-    Events(id = id, clientID = clientID, eventTime = eventTime, eventData = eventData).save()
+    object = Events(clientID = clientID, eventTime = eventTime, eventData = eventData)
+    if(object):
+        return
+    Events(clientID = clientID, eventTime = eventTime, eventData = eventData).save()

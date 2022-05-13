@@ -1,0 +1,4 @@
+mongoengine==0.24.1
+pymongo==4.1.1
+termcolor==1.1.0
+watchdog==2.1.7

@@ -24,6 +24,7 @@ def createMemDump():
 def generate_forensics(evidenceChecklist):
     output = audit.runShellCMD(config.FORENSICS_PYTHON2 + " " + ','.join(map(str, evidenceChecklist)))
     if(not('Success' in output)):
+        config.printError("Error generating forensics from memory dump. Kindly check the profile used and the memory dump file.")
         return
     files = os.listdir(config.FORENSIC_DIR)
     for file in files:
@@ -37,8 +38,5 @@ def generate_forensics(evidenceChecklist):
             dbFunction(**entry)
 
 def memoryForensics(evidenceChecklist):
-    pass
-    # createMemDump()
-    # generate_forensics(evidenceChecklist)
-
-# memoryForensics()
+    createMemDump()
+    generate_forensics(evidenceChecklist)
