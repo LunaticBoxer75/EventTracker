@@ -1,7 +1,10 @@
 # **EventTracker**: Event Driven Evidence Collection for Digital Forensics
 
 ## Installation
-### 1. Client-Side
+### Client-Side
+
+**(You need to perform all the following steps being the root user.)**
+
 Install the following packages (Installation instructions for `ubuntu` distro are provided for reference)
   - Linux Audit Framework (`apt install auditd`)
   - MongoDB ([Refer here](https://www.mongodb.com/docs/manual/tutorial/install-mongodb-on-ubuntu/))
@@ -25,6 +28,8 @@ Create volatility profile using the instructions [here](https://opensource.com/a
 ```
 /usr/local/lib/python2-<version>/dist-packages/volatility-<version>.egg/volatility/plu‌​gins/overlays/linux
 ```
+Start with the [server setup](#server-side) now. After setting up the server, replace the elasticsearch `hosts` key in all the files in [conf files](./client/logstash/conf.d/) to the hostname/ip address and port of elasticsearch running on the server. If you want to skip the server setup, do not start the `logstash` service in the coming steps until the server setup is done.
+
 Copy the configuration files from [here](./client/logstash/conf.d) to `/etc/logstash/conf.d/` directory and [pipelines.yml](./client/logstash/pipelines.yml) to `/etc/logstash/`.
 
 Start the `mongod`, `auditd` and `logstash` services using the command:
@@ -37,3 +42,25 @@ After performing all the above steps, start the client by executing [fileMonitor
 ```
 python3 fileMonitor.py
 ```
+
+### Server-Side
+
+Install elasticsearch using the instructions given [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/install-elasticsearch.html) and kibana using the instructions given [here](https://www.elastic.co/guide/en/kibana/current/install.html). Make necessary changes to their configuration and make sure the elasticsearch address and port is accessible from the client(s).
+
+After setting up elasticsearch and kibana, start them and do the initial kibana setup. Once that is done, look for **Kibana/Saved Objects** in kibana search bar and navigate to the link. Use the import button on the page opened to import the kibana dashboard from the file [export.ndjson](./server/export.ndjson).
+
+Once import is done, navigate to **Dev Tools/Console** from the kibana search bar and execute the following two requests.
+``` 
+PUT login_activity
+```
+```
+PUT login_activity/_mapping/
+{
+  "properties": {
+    "geoip.geo.location": {
+      "type": "geo_point"
+    }
+  }
+}
+```
+The server setup is complete. Move to the next steps in the client setup now.
