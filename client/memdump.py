@@ -20,6 +20,7 @@ def createMemDump():
     if("lime" in existingMods):
         audit.runShellCMD(config.RMMOD_CMD.format(mod=config.MEMDUMP_MOD_NAME))
     audit.runShellCMD(config.LIME_INSMOD_CMD.format(modPath=config.MEMDUMP_MOD_FILEPATH))
+    audit.runShellCMD(config.RMMOD_CMD.format(mod=config.MEMDUMP_MOD_NAME))
 
 def generate_forensics(evidenceChecklist):
     output = audit.runShellCMD(config.FORENSICS_PYTHON2 + " " + ','.join(map(str, evidenceChecklist)))
